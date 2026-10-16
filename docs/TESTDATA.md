@@ -213,7 +213,8 @@ Channel shapes of `STATISTICAL_TESTS`:
 2. `PREPARE_GENOME` only builds the bwa/hisat2 indices when `ciri` is a detection tool (or `--bwa/--hisat2` are given). With `--tools circexplorer2 --quantification_tools ciriquant` (the `-profile test` default) `CIRIQUANT` silently never runs because its index channels are empty.
 3. `STATISTICAL_TESTS` joins `ch_gene_counts` and `ch_circ_counts` on the full meta, but the quantification subworkflows emit different metas (`gene_counts` vs `tx_counts`, `gene` vs `circ`), so `CIRCTEST_PREPARE`/`CIRCTEST_CIRCTEST` never run in the pipeline (only `CIRIQUANT_DE` does).
 4. `BSJ_DETECTION` fails at the `emit:` block (`STAR2PASS.out` undefined) when no STAR-based tool is selected (e.g. `--tools ciri`).
-5. `MIRNA_FILTERING` needs >= 5 sample columns and loops from column 5; `COMPUTE_CORRELATIONS` still reads `params.mirna_correlation` inside its template and needs >= 3 samples.
+5. `MIRNA_BINDINGSITES` fails with `--mirna_tools miranda` alone ("Access to 'TARGETSCAN.out' is undefined", `mirna_bindingsites/main.nf` line 66); the tests must select both tools or the subworkflow needs a guard.
+6. `MIRNA_FILTERING` needs >= 5 sample columns and loops from column 5; `COMPUTE_CORRELATIONS` still reads `params.mirna_correlation` inside its template and needs >= 3 samples.
 
 ## Reproducing everything
 
