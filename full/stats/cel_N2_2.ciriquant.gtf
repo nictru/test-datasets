@@ -1,0 +1,6 @@
+##Sample: cel_N2_2
+##Total_Reads: 955098
+##Mapped_Reads: 926038
+##Circular_Reads: 4
+##version: 1.1.3
+chrI	CIRIquant	circRNA	3598622	3598977	4.3195	-	.	circ_id "chrI:3598622-3598977:-"; circ_type "intron"; bsj 2.000; fsj 194.000; junc_ratio 0.020; gene_id "Y47G6A.29"; gene_name "Y47G6A.29";

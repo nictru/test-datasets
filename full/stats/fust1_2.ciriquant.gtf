@@ -1,0 +1,6 @@
+##Sample: fust1_2
+##Total_Reads: 1139832
+##Mapped_Reads: 1113286
+##Circular_Reads: 2
+##version: 1.1.3
+chrI	CIRIquant	circRNA	2478229	2478802	1.7965	-	.	circ_id "chrI:2478229-2478802:-"; circ_type "intron"; bsj 1.000; fsj 113.000; junc_ratio 0.017; gene_id "abtm-1"; gene_name "abtm-1";

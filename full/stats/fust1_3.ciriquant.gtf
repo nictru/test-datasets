@@ -1,0 +1,7 @@
+##Sample: fust1_3
+##Total_Reads: 1117508
+##Mapped_Reads: 1089164
+##Circular_Reads: 4
+##version: 1.1.3
+chrI	CIRIquant	circRNA	1140805	1147588	1.8363	-	.	circ_id "chrI:1140805-1147588:-"; circ_type "intron"; bsj 1.000; fsj 40.000; junc_ratio 0.048; gene_id "Y48G8AL.10"; gene_name "Y48G8AL.10";
+chrI	CIRIquant	circRNA	2668794	2669213	1.8363	+	.	circ_id "chrI:2668794-2669213:+"; circ_type "intron"; bsj 1.000; fsj 1414.000; junc_ratio 0.001; gene_id "F32B5.6"; gene_name "F32B5.6";
