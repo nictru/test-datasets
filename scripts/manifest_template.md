@@ -11,10 +11,10 @@ stays untouched at the root of the branch; the user-facing `-profile test` keeps
 
 ## Overview
 
-| Set | What | Size | Used by |
-| --- | --- | --- | --- |
-| mini | 800 kb region of C. elegans chrI, 2 samples x 20 000 read pairs, frozen outputs of one run with all tools | ~48 MB | A1-A7, B1-B3 |
-| full stats | quantification outputs of the 6-sample `-profile test` data | ~29 MB | A5 (`STATISTICAL_TESTS`) |
+| Set | What | Size |
+| --- | --- | --- |
+| mini | 800 kb region of C. elegans chrI, 2 samples x 20 000 read pairs, frozen outputs of one run with all tools | ~48 MB |
+| full stats | quantification outputs of the 6-sample `-profile test` data | ~29 MB |
 
 **Region**: `chrI:1125001-1925000` (800 kb). It is the window with the most circexplorer2 BSJs (427 unique BSJs from the 6
 samples) that lie completely inside genes that are completely inside the window. The window is cut out of `reference/chrI.fa`
@@ -74,18 +74,22 @@ Channel shapes of `STATISTICAL_TESTS`:
 
 ## Tools that are missing or degraded
 
+State of the tools when the data were generated. The `FLI_DETECTION`, `CIRIVIS_UNIFY` and `jccirc` problems listed here are fixed in nf-core/circrna PR #242, but no frozen FLI outputs are shipped: the cirifull module tests start from the CIRI inputs listed above.
+
 | Tool / step | State on the mini set | Consequence |
 | --- | --- | --- |
 | BSJ: circexplorer2, circrna_finder, circtools, ciri, find_circ, mapsplice, segemehl | worked, intermediates present | real tests possible |
 | BSJ: psirc | ran, found **0** junctions (also with `-m 5 -u 100`, other library types) | `*.psirc_bsj.*` files are empty; use `-stub` for psirc BSJ/FLI-from-BSJ |
 | FLI: psirc, circtools | worked inside the run, but `FLI_DETECTION` mixes the psirc FASTA into the genome FASTA that circtools gets (Finding 1) | no frozen FLI outputs shipped |
-| FLI: cirifull | `CIRIAS`/`RO2`/`MERGE`/`BUILD_LIST`/`CIRI_VIS` never start because `FLI_DETECTION` overwrites its `ch_fasta` input with an empty channel (Finding 1, which hides a second bug in the `CIRIVIS_UNIFY` output); the CIRI inputs (`*.ciri.txt`, `*.ciri.sam`, fixed-length reads) are present | A4 can test the modules directly with these files |
+| FLI: cirifull | `CIRIAS`/`RO2`/`MERGE`/`BUILD_LIST`/`CIRI_VIS` never start because `FLI_DETECTION` overwrites its `ch_fasta` input with an empty channel (Finding 1, which hides a second bug in the `CIRIVIS_UNIFY` output); the CIRI inputs (`*.ciri.txt`, `*.ciri.sam`, fixed-length reads) are present | the cirifull module tests start directly from these files |
 | FLI: jccirc | not run: `jccirc` is not allowed by the `fli_tools` pattern of `nextflow_schema.json` | stub only |
 | Quantification: CIRIquant | runs, but quantifies **no** circRNA on the mini set (header-only GTF/matrix; 5 circRNAs on the 6-sample data) | module test passes on empty output; the 6-sample files in the stats set are non-trivial |
 | miRNA: miranda, targetscan | worked | |
 | miRNA: expression branch (`mirna_expression`) | `COMPUTE_CORRELATIONS` fails with "No transcripts left after filtering" (fishpond needs >= 3 samples) | `DESEQ2_NORMALIZATION` and `MIRNA_FILTERING` outputs are shipped; correlations: `-stub` + TODO |
 
-## Findings while generating the data (pre-existing behaviour of the pipeline, not fixed here)
+## Findings while generating the data
+
+Behaviour of the pipeline at the time the data were generated. Findings 1, 4 and 5 (and the `jccirc` schema entry above) are fixed in nf-core/circrna PR #242; 2, 3 and 6 are tracked as issues in nf-core/circrna.
 
 1. `subworkflows/local/fli_detection/main.nf`: the local `ch_fasta = channel.empty()` shadows the input `ch_fasta` (genome FASTA) and is later mixed with the FLI FASTAs, so CIRIFULL/JCCIRC get an empty channel (cirifull silently stops after `RO1`) and CIRCTOOLS gets the wrong FASTA. Renaming the accumulator (e.g. `ch_fli_fasta`) fixes it; with that patch cirifull runs through `RO2`, `MERGE`, `BUILD_LIST` and `CIRI_VIS` on the mini data. It then fails in the `CIRIFULL` subworkflow because `CIRIVIS_UNIFY` emits `bed` as a bare `path` (no `[meta, path]` tuple) while the subworkflow does `.map { meta, bed -> ... }` ("Invalid method invocation `call`"): the module needs `tuple val(meta), path("${prefix}.bed")`.
 2. `PREPARE_GENOME` only builds the bwa/hisat2 indices when `ciri` is a detection tool (or `--bwa/--hisat2` are given). With `--tools circexplorer2 --quantification_tools ciriquant` (the `-profile test` default) `CIRIQUANT` silently never runs because its index channels are empty.
@@ -100,7 +104,7 @@ Channel shapes of `STATISTICAL_TESTS`:
 git clone -b circrna git@github.com:nictru/test-datasets.git && cd test-datasets
 # needs: nextflow >= 25.10, apptainer (or PROFILE=docker), samtools, python3; ~10 GB scratch, 16+ cpus
 PROFILE=apptainer bash scripts/generate_testdata.sh /path/to/nf-core/circrna /path/to/scratch
-python3 scripts/write_manifest.py . docs/TESTDATA.md <commit-sha>
+python3 scripts/write_manifest.py . README.md <commit-sha>
 ```
 
 `scripts/generate_testdata.sh` runs: (1) the 6-sample test profile -> `full stats`; (2) `select_region.py` (window with most BSJs);
