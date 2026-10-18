@@ -46,7 +46,7 @@ Tests should build their input channels from `params.pipelines_testdata_base_pat
 
 ## Frozen intermediates
 
-One run of the pipeline on the mini set (generator step "mini run A/B") with `--tools ciri,circexplorer2,find_circ,circrna_finder,mapsplice,circtools,segemehl,psirc`,
+One run of the pipeline on the mini set (generator step "mini run A/B") with `--tools ciri2,circexplorer2,find_circ,circrna_finder,mapsplice,circtools,segemehl,psirc`,
 `--fli_tools psirc,circtools,cirifull`, `--quantification_tools psirc,ciriquant,sum,max --bootstrap_samples 3`, `--mirna_tools miranda,targetscan`, `--min_tools 1`.
 File names are `<sample>.<what>.<ext>` (or `all.*`, `psirc.*`, `ciriquant.*`, `mirna*.*` for files that are not per sample).
 Channel names in the "What" column are the emits of `BSJ_DETECTION`, `COMBINE_TRANSCRIPTOMES` and `QUANTIFICATION`.
@@ -56,7 +56,7 @@ Channel names in the "What" column are the emits of `BSJ_DETECTION`, `COMBINE_TR
 Meta fields the subworkflows expect around these files:
 
 - per sample files: `[id: '<sample>', single_end: false]`; `bed_per_sample_tool`: `[id: '<sample>', tool: '<tool>']` (+ the BED has the sample/tool columns);
-  the fixed-length reads: `[id: '<sample>', target_length: <int from *.ciri.readlength.txt>]`;
+  the fixed-length reads: `[id: '<sample>', target_length: <int from *.ciri2.readlength.txt>]`;
 - combined files: `[id: 'all']`; transcriptome files: `[id: 'transcriptome']`;
 - psirc quantification matrices: `[id: 'gene_counts' | 'tx_counts' ..., quantification: 'psirc']`; CIRIquant matrices `[id: 'gene' | 'circ']` (see "Findings" for why the metas are inconsistent).
 
@@ -78,10 +78,10 @@ State of the tools when the data were generated. The `FLI_DETECTION`, `CIRIVIS_U
 
 | Tool / step | State on the mini set | Consequence |
 | --- | --- | --- |
-| BSJ: circexplorer2, circrna_finder, circtools, ciri, find_circ, mapsplice, segemehl | worked, intermediates present | real tests possible |
+| BSJ: circexplorer2, circrna_finder, circtools, ciri2, find_circ, mapsplice, segemehl | worked, intermediates present | real tests possible |
 | BSJ: psirc | ran, found **0** junctions (also with `-m 5 -u 100`, other library types) | `*.psirc_bsj.*` files are empty; use `-stub` for psirc BSJ/FLI-from-BSJ |
 | FLI: psirc, circtools | worked inside the run, but `FLI_DETECTION` mixes the psirc FASTA into the genome FASTA that circtools gets (Finding 1) | no frozen FLI outputs shipped |
-| FLI: cirifull | `CIRIAS`/`RO2`/`MERGE`/`BUILD_LIST`/`CIRI_VIS` never start because `FLI_DETECTION` overwrites its `ch_fasta` input with an empty channel (Finding 1, which hides a second bug in the `CIRIVIS_UNIFY` output); the CIRI inputs (`*.ciri.txt`, `*.ciri.sam`, fixed-length reads) are present | the cirifull module tests start directly from these files |
+| FLI: cirifull | `CIRIAS`/`RO2`/`MERGE`/`BUILD_LIST`/`CIRI_VIS` never start because `FLI_DETECTION` overwrites its `ch_fasta` input with an empty channel (Finding 1, which hides a second bug in the `CIRIVIS_UNIFY` output); the CIRI2 inputs (`*.ciri2.txt`, `*.ciri2.sam`, fixed-length reads) are present | the cirifull module tests start directly from these files |
 | FLI: jccirc | not run: `jccirc` is not allowed by the `fli_tools` pattern of `nextflow_schema.json` | stub only |
 | Quantification: CIRIquant | runs, but quantifies **no** circRNA on the mini set (header-only GTF/matrix; 5 circRNAs on the 6-sample data) | module test passes on empty output; the 6-sample files in the stats set are non-trivial |
 | miRNA: miranda, targetscan | worked | |
@@ -92,9 +92,9 @@ State of the tools when the data were generated. The `FLI_DETECTION`, `CIRIVIS_U
 Behaviour of the pipeline at the time the data were generated. Findings 1, 4 and 5 (and the `jccirc` schema entry above) are fixed in nf-core/circrna PR #242; 2, 3 and 6 are tracked as issues in nf-core/circrna.
 
 1. `subworkflows/local/fli_detection/main.nf`: the local `ch_fasta = channel.empty()` shadows the input `ch_fasta` (genome FASTA) and is later mixed with the FLI FASTAs, so CIRIFULL/JCCIRC get an empty channel (cirifull silently stops after `RO1`) and CIRCTOOLS gets the wrong FASTA. Renaming the accumulator (e.g. `ch_fli_fasta`) fixes it; with that patch cirifull runs through `RO2`, `MERGE`, `BUILD_LIST` and `CIRI_VIS` on the mini data. It then fails in the `CIRIFULL` subworkflow because `CIRIVIS_UNIFY` emits `bed` as a bare `path` (no `[meta, path]` tuple) while the subworkflow does `.map { meta, bed -> ... }` ("Invalid method invocation `call`"): the module needs `tuple val(meta), path("${prefix}.bed")`.
-2. `PREPARE_GENOME` only builds the bwa/hisat2 indices when `ciri` is a detection tool (or `--bwa/--hisat2` are given). With `--tools circexplorer2 --quantification_tools ciriquant` (the `-profile test` default) `CIRIQUANT` silently never runs because its index channels are empty.
+2. `PREPARE_GENOME` only builds the bwa/hisat2 indices when `ciri2` is a detection tool (or `--bwa/--hisat2` are given). With `--tools circexplorer2 --quantification_tools ciriquant` (the `-profile test` default) `CIRIQUANT` silently never runs because its index channels are empty.
 3. `STATISTICAL_TESTS` joins `ch_gene_counts` and `ch_circ_counts` on the full meta, but the quantification subworkflows emit different metas (`gene_counts` vs `tx_counts`, `gene` vs `circ`), so `CIRCTEST_PREPARE`/`CIRCTEST_CIRCTEST` never run in the pipeline (only `CIRIQUANT_DE` does).
-4. `BSJ_DETECTION` fails at the `emit:` block (`STAR2PASS.out` undefined) when no STAR-based tool is selected (e.g. `--tools ciri`).
+4. `BSJ_DETECTION` fails at the `emit:` block (`STAR2PASS.out` undefined) when no STAR-based tool is selected (e.g. `--tools ciri2`).
 5. `MIRNA_BINDINGSITES` fails with `--mirna_tools miranda` alone ("Access to 'TARGETSCAN.out' is undefined", `mirna_bindingsites/main.nf` line 66); the tests must select both tools or the subworkflow needs a guard.
 6. `MIRNA_FILTERING` needs >= 5 sample columns and loops from column 5; `COMPUTE_CORRELATIONS` still reads `params.mirna_correlation` inside its template and needs >= 3 samples.
 

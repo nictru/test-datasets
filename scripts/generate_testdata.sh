@@ -47,7 +47,7 @@ nf() {
 
 # ---------------------------------------------------------------------------------------------
 # 1. Full 6-sample chrI run (the `test` profile): source of the region choice and of full/stats
-#    quantification_tools ciriquant only runs when the bwa/hisat2 indices are provided or `ciri`
+#    quantification_tools ciriquant only runs when the bwa/hisat2 indices are provided or `ciri2`
 #    is a detection tool, so the upstream prebuilt indices are passed in.
 # ---------------------------------------------------------------------------------------------
 cd "$WORK/full"
@@ -98,7 +98,7 @@ printf 'sample,condition\ncel_N2_1,N2\nfust1_1,fust1\n' > "$TD/mini/phenotype.cs
 # ---------------------------------------------------------------------------------------------
 cd "$WORK/mini"
 MINI_ARGS=(--input "$WORK/mini/samples_local.csv" --fasta "$TD/mini/reference/chrI_mini.fa" --gtf "$TD/mini/reference/chrI_mini.gtf"
-    --tools ciri,circexplorer2,find_circ,circrna_finder,mapsplice,circtools,segemehl,psirc
+    --tools ciri2,circexplorer2,find_circ,circrna_finder,mapsplice,circtools,segemehl,psirc
     --fli_tools psirc,circtools,cirifull --quantification_tools psirc,ciriquant,sum,max --bootstrap_samples 3
     --mirna_tools miranda,targetscan --min_tools 1 --save_intermediates --save_reference)
 nf miniA "$PIPE" -profile "$PROFILE" -resume -c "$WORK/resources.config" -w "$WORK/mini/work" \

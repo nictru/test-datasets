@@ -27,11 +27,11 @@ RULES = {
         (P + r"BSJ_DETECTION:STAR2PASS:PASS_2", r"\.SJ\.out\.tab$", "{s}.star.SJ.out.tab"),
         (P + r"BSJ_DETECTION:STAR2PASS:PASS_2", r"\.Aligned\.out\.bam$", "{s}.star.Aligned.out.bam"),
         # CIRI2
-        (P + r"BSJ_DETECTION:CIRI:CIRI2", r"^{s}\.txt$", "{s}.ciri.txt"),
-        (P + r"BSJ_DETECTION:CIRI:CIRI2", r"^{s}\.sam$", "{s}.ciri.sam"),
-        (P + r"BSJ_DETECTION:CIRI:READLENGTH", r"_readlength\.txt$", "{s}.ciri.readlength.txt"),
-        (P + r"BSJ_DETECTION:CIRI:FASTP", r"_R1\.fastp\.fastq\.gz$", "{s}.ciri.fixed_length_1.fastq.gz"),
-        (P + r"BSJ_DETECTION:CIRI:FASTP", r"_R2\.fastp\.fastq\.gz$", "{s}.ciri.fixed_length_2.fastq.gz"),
+        (P + r"BSJ_DETECTION:CIRI2:DETECT", r"^{s}\.txt$", "{s}.ciri2.txt"),
+        (P + r"BSJ_DETECTION:CIRI2:DETECT", r"^{s}\.sam$", "{s}.ciri2.sam"),
+        (P + r"CIRI_READS:READLENGTH", r"_readlength\.txt$", "{s}.ciri2.readlength.txt"),
+        (P + r"CIRI_READS:FASTP", r"_R1\.fastp\.fastq\.gz$", "{s}.ciri2.fixed_length_1.fastq.gz"),
+        (P + r"CIRI_READS:FASTP", r"_R2\.fastp\.fastq\.gz$", "{s}.ciri2.fixed_length_2.fastq.gz"),
         # psirc BSJ (output directory without the bulky mapping/ folder)
         (P + r"BSJ_DETECTION:PSIRC:BSJ", r"output/(candidate_circ_junctions\.(bed|fa)|candidate_circ_supporting_reads\.sam|junction_names_output_to_raw\.tsv)$", "{s}.psirc_bsj.{base}"),
         # BED files
